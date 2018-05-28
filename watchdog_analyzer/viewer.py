@@ -56,6 +56,7 @@ class _TreeWidget(MLTreeAction):
             ord('}'): self.h_collapse_all,
             ord('q'): self.h_exit,
         })
+        self.slow_scroll = True
 
     def actionHighlighted(self, act_on_this: TreeData, key_press):
         if act_on_this.expanded:
