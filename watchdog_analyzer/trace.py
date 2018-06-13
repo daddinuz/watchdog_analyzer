@@ -24,15 +24,29 @@ class Trace(typing.Mapping, collections.Mapping):
         else:
             print(f"Building trace: '{self._path}' ...")
             self._trace = dict()
+            relocated_records = list()
             with self._dump.path.open('r') as f:
                 for record in map(json.loads, f.readlines()):
-                    record['link'] = f"{record['file']}:{record['line']}"
-                    data = self._trace.setdefault(record['PID'], {})
+                    pid = self._key_by_pid(record['PID'])
+                    file = self._key_by_file(record['file'])
+                    func = self._key_by_func(record['func'])
+
+                    data = self._trace.setdefault(pid, {}).setdefault(file, {}).setdefault(func, {})
                     if isinstance(record['address'], dict):
-                        address = record['address']
-                        data.setdefault(address['to'], data.pop(address['from'], [])).insert(0, record)
+                        relocated_records.append(record)
                     else:
-                        data.setdefault(record['address'], []).insert(0, record)
+                        data.setdefault(self._key_by_address(record['address']), []).insert(0, record)
+
+                for record in relocated_records:
+                    assert isinstance(record['address'], dict)
+                    pid = self._key_by_pid(record['PID'])
+                    file = self._key_by_file(record['file'])
+                    func = self._key_by_func(record['func'])
+                    from_address = self._key_by_address(record['address']['from'])
+                    to_address = self._key_by_address(record['address']['to'])
+
+                    data = self._trace[pid][file][func]
+                    data.setdefault(to_address, data.pop(from_address, [])).insert(0, record)
             self._should_save = True
 
     def save(self) -> None:
@@ -40,6 +54,22 @@ class Trace(typing.Mapping, collections.Mapping):
             print(f"Saving trace: '{self._path}' ...")
             with self._path.open('w') as f:
                 json.dump(self._trace, f)
+
+    @classmethod
+    def _key_by_pid(cls, pid: str) -> str:
+        return f"PID: {pid}"
+
+    @classmethod
+    def _key_by_file(cls, file: str) -> str:
+        return file
+
+    @classmethod
+    def _key_by_func(cls, func: str) -> str:
+        return func
+
+    @classmethod
+    def _key_by_address(cls, address: str) -> str:
+        return f"address: {address}"
 
     def __getitem__(self, k: _KeyType) -> _CovariantValueType:
         return self._trace.__getitem__(k)
