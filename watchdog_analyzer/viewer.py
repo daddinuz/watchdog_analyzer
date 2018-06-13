@@ -28,6 +28,7 @@ class _AnalysisSelectorWidget(MultiLineAction):
         super(_AnalysisSelectorWidget, self).__init__(*args, **kwargs)
         for k in _keys():
             self.handlers.pop(k, None)
+        self.handlers[curses.KEY_BACKSPACE] = self.h_exit
         self.handlers[ord('q')] = self.h_exit
         self.values = self._OPTIONS
 
@@ -52,6 +53,7 @@ class _TreeWidget(MLTreeAction):
         self.handlers.update({
             curses.KEY_RIGHT: self.h_expand_tree,
             curses.KEY_LEFT: self.h_collapse_tree,
+            curses.KEY_BACKSPACE: self.h_exit,
             ord('{'): self.h_expand_all,
             ord('}'): self.h_collapse_all,
             ord('q'): self.h_exit,
