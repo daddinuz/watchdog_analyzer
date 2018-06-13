@@ -25,7 +25,7 @@ def main():
     if args['--no-save'] is False:
         tree.save()
 
-    print('Starting GUI ...')
+    print('Starting TUI ...')
     time.sleep(1)
 
     Viewer.inject_trace(tree).build().run()
