@@ -35,7 +35,7 @@ class Trace(typing.Mapping, collections.Mapping):
                     if isinstance(record['address'], dict):
                         relocated_records.append(record)
                     else:
-                        data.setdefault(self._key_by_address(record['address']), []).insert(0, record)
+                        data.setdefault(self._key_by_address(record['address']), []).append(record)
 
                 for record in relocated_records:
                     assert isinstance(record['address'], dict)
@@ -46,7 +46,8 @@ class Trace(typing.Mapping, collections.Mapping):
                     to_address = self._key_by_address(record['address']['to'])
 
                     data = self._trace[pid][file][func]
-                    data.setdefault(to_address, data.pop(from_address, [])).insert(0, record)
+                    data.setdefault(to_address, data.pop(from_address, [])).append(record)
+                    data[to_address].sort(key=lambda d: d['line'])
             self._should_save = True
 
     def save(self) -> None:
@@ -61,11 +62,11 @@ class Trace(typing.Mapping, collections.Mapping):
 
     @classmethod
     def _key_by_file(cls, file: str) -> str:
-        return file
+        return f"file: {file}"
 
     @classmethod
     def _key_by_func(cls, func: str) -> str:
-        return func
+        return f"func: {func}"
 
     @classmethod
     def _key_by_address(cls, address: str) -> str:

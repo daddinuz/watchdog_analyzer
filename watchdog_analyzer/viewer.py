@@ -2,10 +2,10 @@ import abc
 import curses
 import typing
 
+from chainable_iterator import ChainableIterator
 from npyscreen import ActionFormMinimal, Form, MLTreeAction, MultiLineAction, NPSAppManaged, TreeData
 
 from watchdog_analyzer import analyzer
-from watchdog_analyzer.chainable_iterator import ChainableIterator
 from watchdog_analyzer.trace import Trace
 
 _MAIN_FORM = '_MAIN_FORM'
@@ -94,7 +94,11 @@ class _TreeForm(Form, metaclass=abc.ABCMeta):
                 if isinstance(value, dict):
                     iterator.chain(((node.new_child(content=f'{key}', expanded=False), value),))
                 elif isinstance(value, list):
-                    iterator.chain(((node.new_child(content=f'{key}', expanded=False), dict(enumerate(value))),))
+                    iterator.chain(((node.new_child(content=f'{key}', expanded=False),
+                                     dict(
+                                         map(lambda o: (f"{o[0]} ({o[1]['call']}):",
+                                                        o[1]), enumerate(value)))
+                                     ),))
                 else:
                     node.new_child(content=f'{key}: {value}', expanded=False)
         return root

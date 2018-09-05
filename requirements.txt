@@ -1,2 +1,4 @@
 docopt==0.6.2
 npyscreen==4.10.5
+git+ssh://git@github.com/daddinuz/chainable_iterator.git@0.1.0#egg=chainable_iterator-0.1.0
+git+ssh://git@github.com/daddinuz/filter_dict.git@0.2.0#egg=filter_dict-0.2.0
